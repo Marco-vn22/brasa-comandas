@@ -1,0 +1,93 @@
+BRASA · SISTEMA DE COMANDAS
+React + Firebase Authentication + Firebase Realtime Database (no Firestore).
+
+ARRANQUE LOCAL
+Requisitos: Node.js 20.19+ o 22.12+ y npm.
+  npm install
+  npm run dev
+Abrir la dirección que muestra Vite. Para compilar: npm run build.
+Pruebas de cálculo y estados: npm test.
+
+DEMO
+Funciona sin configurar una cuenta externa. Incluye tres pedidos de ejemplo.
+Se guarda en localStorage y sincroniza pestañas del mismo navegador y origen.
+No sincroniza dispositivos. La aplicación siempre indica el modo demo.
+
+CONECTAR FIREBASE
+El proyecto polleria-8f1ee ya está preconfigurado en src/firebase-config.js.
+Firebase Authentication por correo y contraseña ya está habilitado.
+Las reglas incluidas ya se publicaron en Realtime Database.
+La consulta anónima a orders devuelve 401 (acceso denegado).
+La primera cuenta de personal ya se creó y autorizó con staff/<UID> = true.
+1. Crea un proyecto Firebase y registra una aplicación web.
+2. Crea Realtime Database. Copia su databaseURL (no una URL de Firestore).
+3. Activa Authentication > Proveedores > Correo electrónico y contraseña.
+4. En Authentication > Usuarios crea una cuenta para cada trabajador.
+5. En Realtime Database > Reglas publica database.rules.json.
+6. Desde la consola Firebase, añade staff/<UID> con valor booleano true
+   para cada UID de trabajador autorizado. El cliente no puede editar staff.
+7. En Configuración de Brasa pega el objeto firebaseConfig como JSON válido
+   (claves entre comillas, sin const, sin comentarios, sin coma final).
+   Incluye apiKey, authDomain, databaseURL, projectId y appId.
+8. Inicia sesión con la cuenta de personal. Repite la configuración y sesión
+   en los dispositivos del salón y la cocina con el mismo proyecto.
+9. Verifica dos dispositivos: crear, preparar cada producto, marcar listo,
+   y confirmar Entregado al cliente desde Pedidos. Entonces sale de Cocina.
+
+Los datos web de configuración Firebase son identificadores públicos. Nunca
+pegues una clave privada, cuenta de servicio ni contraseña en esa pantalla.
+Las reglas restringen acceso a usuarios autenticados incluidos en staff.
+Todos los usuarios autorizados tienen las mismas funciones; las vistas
+Mesero/Cocina no son permisos separados. Las reglas evitan regresiones de
+estado, borrar pedidos y modificar importes de pedidos existentes.
+El personal autorizado puede crear pedidos: no hay validación de la suma ni
+de un catálogo de precios en un servidor. Para caja con controles contra
+manipulación del cliente se necesita un backend de validación adicional.
+
+OPERACIÓN
+Seleccionar mesa 01–20 o Para llevar con nombre del cliente. Agregar productos
+y notas. Cobrar y enviar a cocina. Importes calculados en céntimos de sol.
+Efectivo: el recibido debe cubrir total, se muestra el vuelto.
+Yape: el mesero verifica en su propia app y confirma manualmente. No hay
+pasarela, QR, consulta automática de Yape ni comprobante fiscal electrónico.
+
+Cocina: pedido nuevo amarillo y parpadeo breve (respeta reducir movimiento).
+Un único botón por comanda: Preparar pedido marca todos los productos en
+verde; luego Todo listo marca la comanda completa en azul y avisa al mesero.
+El cambio de todos los productos se guarda en una sola transacción Firebase.
+Las comandas antiguas con productos parcialmente listos siguen funcionando
+sin retroceder ningún producto. El mesero confirma la
+entrega al cliente. Se conserva en Entregados y desaparece de Cocina.
+Las escrituras se bloquean cuando Firebase informa que no hay conexión.
+Ante error no se limpia la comanda, para permitir reintentar.
+
+CATÁLOGO
+Precios ilustrativos en soles peruanos, en src/main.jsx (array menu).
+Personalizar nombres, precios, imágenes y número de mesas antes de operar.
+Gordita se incluye como complemento genérico: ajustar a tu carta real.
+Fotografías ilustrativas desde Unsplash; no representan porciones exactas.
+Fuentes desde Google Fonts; la tipografía del sistema sirve como respaldo.
+
+PUBLICACIÓN ALTERNATIVA EN FIREBASE HOSTING
+Configura el proyecto en Firebase CLI. Ejecuta npm run build y luego
+firebase deploy --only hosting,database --project TU_PROJECT_ID.
+El archivo firebase.json está incluido. No se incluyen credenciales privadas.
+
+VERIFICACIÓN
+Pruebas unitarias: totales, vuelto insuficiente, pedido parcialmente listo,
+entrega y transiciones permitidas. Flujo demo revisado en navegador.
+La URL real de Realtime Database responde y las reglas se publicaron
+sin errores. Se comprobó el rechazo de lectura anónima (401). Se verificó
+la sesión autenticada y el ciclo completo entre dos pestañas de la web
+publicada: crear pedido, preparar productos individualmente, marcar listo,
+sincronizar con mesero y entregar. Cocina quedó con cero pedidos activos.
+El historial contiene una comanda identificada como PRUEBA TÉCNICA, con
+la nota Sin cobro real, ya entregada. No corresponde a una venta real.
+La prueba validó también que un pedido parcialmente listo no habilita
+la entrega. No se probó desde dos dispositivos físicos independientes.
+
+VISTA DE COCINA
+Tarjetas compactas con columnas adaptadas al ancho disponible. La cabecera
+y la leyenda permanecen visibles; solo se desplaza la lista de comandas.
+El área de comandas admite desplazamiento con teclado y conserva visibles
+las acciones de cada pedido, sin recortar notas ni productos.
